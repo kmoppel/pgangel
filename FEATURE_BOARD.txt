@@ -1,0 +1,51 @@
+must
+--
+no clicking around principle, very lean left bar, some tree still needed i guess
+tagged connections. multiple tags can be applied. autocomplete, show top (by count) tags in upper-left + expand arrow
+reverse-i-search, ctrl-r, for last x queries
+when opening, offer a list of last db connections as popup and offer to reopen last query file(s, if save date within x minutes) for that connection. autosave non-file query tabs in the background every 5min if there are changes
+quick tbl sample (ctl-shift-t), navigateable automcompl box with all tables/views, limiting by PK(or last_mod/last_created) desc/asc
+    showing estimated rowcount (based on relpages) also in parentheses
+tabbed interface, colored tabs
+table inheritance, hide child tables by default
+rename(f2)/drop tbl/view from the left bar
+scan for caused locks or running query in another thread, popup warining or kill
+only on-demand catalog refresh (ctl+shift+r)
+sproc calling (shortcut to reverse-find in all sprocs) with paramter generate
+search_path setting with autocomplete (ctl-shift-s, show all apis, remember recently selected ones
+CSV export, remember last save location, "quick or smart save" - into "db_name" subfolder+date
+active statusbar - connected time, in tx time, warning for idle in transaction, search_path, connection_timeout, current_role
+ctl+shift+r search over all objects, open in tree left side
+
+
+nth
+--
+advanced code completion:
+    column compl. w/o table being mentioned yet
+sql highlighter
+saved quick-queries 1-10 nums
+favourites bar, search in favorites
+editable grid, fast insert friendly "NOT NULL" aware, show default value if its defined, else */0 for text/numerics, true for bool, for FK's with < 100 rows show dropdowns
+"insert into" statement generation for some/all resultgrid data
+automatic filling of join columns based on FKs names
+
+
+fancy
+--
+formatter
+dep. tree generation for a table
+Explain Plan Tool
+autogenerate random data, right click, input would be MB or X rows
+admin_toolbox:
+    all tbls/idx by size, activity - scans or IUD
+    slow sprocs
+    top pg_stat_statements
+    top bloated tbls/indexes
+templates for sprocs, triggers etc, adding of templates (c-x search)
+context sensitive stuff
+    right click on column->create index
+    show sprocs(code) where column is used
+import/export of connections to Java/Py connect string format
+graph engine up to 2 y-axis values
+running same query over multiple connections, showing data in same grid
+or even when having a local postgres server, save queries from different connections into temp/non-temp tables for further processing
