@@ -1,38 +1,48 @@
 must
 --
-no clicking around principle, very lean left bar, some tree still needed i guess
+no clicking around principle, very lean left treebar still needed
+	show only tables and views in 1st stage. then sprocs/trgsprocs. show count of objects in parentheses
 tagged connections. multiple tags can be applied. autocomplete, show top (by count) tags in upper-left + expand arrow
+quick tbl sampling (ctl-shift-t), navigateable automcompl box with all tables/views, on selection execute a select limiting by PK(or last_mod/last_created) desc/asc
+    showing estimated rowcount (based on relpages) for tables in parentheses during navigation
+    include also pg_* views with system information
+keep log of all executed query texts + timestamp + exec time + rowcount
+	show also a dropdown with last queries in desc. compress text to one line. pretty much as in pgadmin3 
 reverse-i-search, ctrl-r, for last x queries
-when opening, offer a list of last db connections as popup and offer to reopen last query file(s, if save date within x minutes) for that connection. autosave non-file query tabs in the background every 5min if there are changes
-quick tbl sample (ctl-shift-t), navigateable automcompl box with all tables/views, limiting by PK(or last_mod/last_created) desc/asc
-    showing estimated rowcount (based on relpages) also in parentheses
-tabbed interface, colored tabs
-table inheritance, hide child tables by default
-rename(f2)/drop tbl/view from the left bar
+when opening, offer a list of last db connections as popup and offer to reopen last query file(s, if save date within x minutes) for that connection
+	autosave non-file query tabs in the background every 5min if there are changes
+tabbed interface, colored tabs, different dbs connections have different colors
+	ctl+d > new tab (=new conn) for same conn, ctl+t > popup for new server, prefill with old conn data - save conn on 'ok'
+object tree
+	table inheritance, hide child tables by default
+	rename(f2)/drop tbl/view
+	by default hide older schemas with variable number part - useful for cases like http://tech.valgog.com/2012/01/schema-based-versioning-and-deployment.html
 scan for caused locks or running query in another thread, popup warining or kill
-only on-demand catalog refresh (ctl+shift+r)
-sproc calling (shortcut to reverse-find in all sprocs) with paramter generate
-search_path setting with autocomplete (ctl-shift-s, show all apis, remember recently selected ones
-CSV export, remember last save location, "quick or smart save" - into "db_name" subfolder+date
+'esc' kills the running query
+only on-connect and on-demand catalog refresh (ctl+shift+r)
+search_path setting with autocomplete (ctl-shift-s, show all visible schemas, place recently selected ones first)
 active statusbar - connected time, in tx time, warning for idle in transaction, search_path, connection_timeout, current_role
-ctl+shift+r search over all objects, open in tree left side
 
 
-nth
+nice to have
 --
+sproc calling (shortcut to reverse-find in all sproc names) skeleton with parameter placeholder generation. include also pg_
+ctl+shift+r search over all objects, open in tree left side
+CSV export, remember last save location, "quick or smart save" - into "db_name" subfolder+date
 advanced code completion:
     column compl. w/o table being mentioned yet
 sql highlighter
 saved quick-queries 1-10 nums
 favourites bar, search in favorites
+	make connection tag-aware - show tagged favourites first if it matches current connection
 editable grid, fast insert friendly "NOT NULL" aware, show default value if its defined, else */0 for text/numerics, true for bool, for FK's with < 100 rows show dropdowns
 "insert into" statement generation for some/all resultgrid data
-automatic filling of join columns based on FKs names
 
 
 fancy
 --
 formatter
+automatic filling of join columns based on catalog's FKs
 dep. tree generation for a table
 Explain Plan Tool
 autogenerate random data, right click, input would be MB or X rows
@@ -46,6 +56,6 @@ context sensitive stuff
     right click on column->create index
     show sprocs(code) where column is used
 import/export of connections to Java/Py connect string format
-graph engine up to 2 y-axis values
-running same query over multiple connections, showing data in same grid
+quick graphing for up to 2 y-axis values eg 'select timepoint, numval1, numval2'
+running same query over multiple connections, showing data in same grid. activate the button if hostname string contains numbers and ask for range
 or even when having a local postgres server, save queries from different connections into temp/non-temp tables for further processing
