@@ -5,12 +5,18 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pgangel.GUI", "Pgangel.GUI\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pgangel.Data", "Pgangel.Data\Pgangel.Data.csproj", "{938AD82A-B494-4443-9000-5AD63B5FB156}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pgangel.IO", "Pgangel.IO\Pgangel.IO.csproj", "{369991B2-3B64-4CB9-80B5-3AE79F316949}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{369991B2-3B64-4CB9-80B5-3AE79F316949}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{369991B2-3B64-4CB9-80B5-3AE79F316949}.Debug|x86.Build.0 = Debug|Any CPU
+		{369991B2-3B64-4CB9-80B5-3AE79F316949}.Release|x86.ActiveCfg = Release|Any CPU
+		{369991B2-3B64-4CB9-80B5-3AE79F316949}.Release|x86.Build.0 = Release|Any CPU
 		{938AD82A-B494-4443-9000-5AD63B5FB156}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{938AD82A-B494-4443-9000-5AD63B5FB156}.Debug|x86.Build.0 = Debug|Any CPU
 		{938AD82A-B494-4443-9000-5AD63B5FB156}.Release|x86.ActiveCfg = Release|Any CPU
