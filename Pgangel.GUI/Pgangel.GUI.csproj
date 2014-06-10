@@ -76,5 +76,9 @@
       <Project>{938AD82A-B494-4443-9000-5AD63B5FB156}</Project>
       <Name>Pgangel.Data</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Pgangel.IO\Pgangel.IO.csproj">
+      <Project>{369991B2-3B64-4CB9-80B5-3AE79F316949}</Project>
+      <Name>Pgangel.IO</Name>
+    </ProjectReference>
   </ItemGroup>
 </Project>

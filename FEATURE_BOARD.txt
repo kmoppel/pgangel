@@ -22,7 +22,7 @@ scan for caused locks or running query in another thread, popup warining or kill
 only on-connect and on-demand catalog refresh (ctl+shift+r)
 search_path setting with autocomplete (ctl-shift-s, show all visible schemas, place recently selected ones first)
 active statusbar - connected time, in tx time, warning for idle in transaction, search_path, connection_timeout, current_role
-
+add support for .pgangel.passwords file, implementing patterns. in addition use .pgpass as a fallback
 
 nice to have
 --
