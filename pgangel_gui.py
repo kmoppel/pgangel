@@ -5,23 +5,7 @@ from gi.repository import Gtk
 
 import pgangel_conf
 import pgangel_db
-
-ns = None # 'new server' dialog handle
-
-class ServerDialogHandler:
-    def on_delete_window(self, *args):
-        # print args
-        args[0].destroy()
-        #Gtk.main_quit(args)
-
-    def on_button_test_connection_clicked(self, *args):
-        dbc = pgangel_db.DBConnection()
-
-    def on_button_ok_clicked(self, *args):
-        print "ok"
-
-    def on_button_cancel_clicked(self, *args):
-        print "cancel"
+import os
 
 class ServerDialog():
     def __init__(self):
@@ -32,6 +16,7 @@ class ServerDialog():
         self.entry_db = None
         self.entry_user = None
         self.entry_password = None
+        self.checkbox_save_password = None
 
     def build(self):
         builder = Gtk.Builder()
@@ -42,8 +27,15 @@ class ServerDialog():
         # print builder.get_objects()
         self.dialog = builder.get_object("dialog1")
         ''':type : gtk.Dialog'''
+        self.entry_name = builder.get_object("entry_port")
+        self.entry_host = builder.get_object("entry_host")
         self.entry_port = builder.get_object("entry_port")
+        self.entry_db = builder.get_object("entry_db")
+        self.entry_user = builder.get_object("entry_user")
+        self.entry_password = builder.get_object("entry_password")
+        self.checkbox_save_password = builder.get_object("entry_port")
 
+        self.entry_user.set_text(os.getenv('USER'))
 
         # notebook1 = Gtk.Notebook()
         # textview1 = create_text()
@@ -62,13 +54,27 @@ class ServerDialog():
         #Gtk.main_quit(args)
 
     def on_button_test_connection_clicked(self, *args):
-        dbc = pgangel_db.DBConnection()
+        password = self.entry_password.get_text()
+        if len(password) == 0:
+            pass # TODO get pass from ~/.pgangel/.passwords file
+        dbc = pgangel_db.DBConnection(self.entry_host.get_text(), self.entry_port.get_text(), self.entry_db.get_text(), self.entry_user.get_text(), password)
+        is_test_ok = dbc.try_connect()
+        dialog = Gtk.MessageDialog(self.dialog, 0, Gtk.MessageType.INFO, Gtk.ButtonsType.OK, "Works!" if is_test_ok else "Naah:(") # TODO show exception
+        dialog.run()
+        dialog.destroy()
+        # TODO - populate the "Database" combobox
 
     def on_button_ok_clicked(self, *args):
-        print "ok"
+        # TODO validate input
+        password = self.entry_password.get_text()
+        if len(password) == 0:
+            pass # TODO get pass from ~/.pgangel/.passwords file
+        pgangel_conf.save_server(self.entry_name.get_text(),
+                                 pgangel_db.DBConnection(self.entry_host.get_text(), self.entry_port.get_text(),
+                                                         self.entry_db.get_text(), self.entry_user.get_text(), password))
 
     def on_button_cancel_clicked(self, *args):
-        print "cancel"
+        self.dialog.hide()
 
 if __name__ == '__main__':
     win = Gtk.Window(title='Testing')
