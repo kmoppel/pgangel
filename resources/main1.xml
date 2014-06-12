@@ -4,6 +4,7 @@
   <requires lib="gtk+" version="3.10"/>
   <object class="GtkWindow" id="window1">
     <property name="can_focus">False</property>
+    <property name="title" translatable="yes">PgAngel</property>
     <property name="default_width">900</property>
     <property name="default_height">600</property>
     <signal name="delete-event" handler="onDeleteWindow" swapped="no"/>
@@ -224,16 +225,11 @@
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <child>
-              <object class="GtkBox" id="box3">
+              <object class="GtkRevealer" id="revealer1">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="orientation">vertical</property>
-                <child>
-                  <placeholder/>
-                </child>
-                <child>
-                  <placeholder/>
-                </child>
+                <property name="transition_type">none</property>
+                <property name="reveal_child">True</property>
                 <child>
                   <placeholder/>
                 </child>
