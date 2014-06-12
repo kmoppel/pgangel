@@ -47,6 +47,8 @@ class ServerDialog():
         # textview3 = create_text()
         # paned1.add2(textview3)
 
+    def NewServer(self, pga):
+        print pga
 
     def on_delete_window(self, *args):
         print self.entry_port.get_text()
