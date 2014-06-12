@@ -27,13 +27,13 @@ class ServerDialog():
         # print builder.get_objects()
         self.dialog = builder.get_object("dialog1")
         ''':type : gtk.Dialog'''
-        self.entry_name = builder.get_object("entry_port")
+        self.entry_name = builder.get_object("entry_name")
         self.entry_host = builder.get_object("entry_host")
         self.entry_port = builder.get_object("entry_port")
         self.entry_db = builder.get_object("entry_db")
         self.entry_user = builder.get_object("entry_user")
         self.entry_password = builder.get_object("entry_password")
-        self.checkbox_save_password = builder.get_object("entry_port")
+        self.checkbox_save_password = builder.get_object("checkbox_save_password")
 
         self.entry_user.set_text(os.getenv('USER'))
 
@@ -69,14 +69,17 @@ class ServerDialog():
         password = self.entry_password.get_text()
         if len(password) == 0:
             pass # TODO get pass from ~/.pgangel/.passwords file
-        pgangel_conf.save_server(self.entry_name.get_text(),
-                                 pgangel_db.DBConnection(self.entry_host.get_text(), self.entry_port.get_text(),
-                                                         self.entry_db.get_text(), self.entry_user.get_text(), password))
+        pgangel_conf.save_server(pgangel_db.DbServer(self.entry_name.get_text(),
+                                                    pgangel_db.DBConnection(self.entry_host.get_text(), self.entry_port.get_text(),
+                                                                            self.entry_db.get_text(), self.entry_user.get_text(), password)))
+        self.dialog.hide()
 
     def on_button_cancel_clicked(self, *args):
         self.dialog.hide()
 
 if __name__ == '__main__':
+    pgangel_conf.ensure_app_folder_and_configs()
+
     win = Gtk.Window(title='Testing')
     win.connect('delete-event', Gtk.main_quit)
     ns = ServerDialog()

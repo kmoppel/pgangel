@@ -42,7 +42,11 @@ class DbServer():
         self.save_password = None    # TODO
 
     def __str__(self):
-        return '''{"name": "''' + self.name  + '''", "db_conn":''' + json.dumps(self.db_conn.__dict__) + '}'
+        vars=dict(self.db_conn.__dict__)
+        vars.pop('connection')
+        vars.pop('password')
+        vars.pop('dataset')
+        return '''{"name": "''' + self.name  + '''", "db_conn":''' + json.dumps(vars) + '}'
 
 
 if __name__ == '__main__':
