@@ -20,7 +20,7 @@ class Pgangel():
     def __init__(self):
         self.window = None
         ''':type : gtk.Window'''
-        self.toolbutton1 = None
+        self.toolbutton_expander = None
         ''':type : gtk.ToolButton'''
         self.revealer1 = None
         self.treeBarBox = None
@@ -42,7 +42,7 @@ class Pgangel():
 
         self.window = builder.get_object("window1")
         ''':type : gtk.Window'''
-        self.toolbutton1 = builder.get_object("toolbutton1")
+        self.toolbutton_expander = builder.get_object("toolbutton_expander")
         self.revealer1 = builder.get_object("revealer1")
         self.statusbar1 = builder.get_object("statusbar1")
         self.sb_context_id = self.statusbar1.get_context_id('messages')
@@ -66,12 +66,13 @@ class Pgangel():
         treestore.append(rabbit, ["Twitch"])
         treestore.append(rabbit, ["Floppy"])
         treeview = Gtk.TreeView(model=treestore)
+        ''':type : gtk.TreeView'''
         treeviewcolumn = Gtk.TreeViewColumn("Pet Names")
         treeview.append_column(treeviewcolumn)
         cellrenderertext = Gtk.CellRendererText()
         treeviewcolumn.pack_start(cellrenderertext, True)
         treeviewcolumn.add_attribute(cellrenderertext, "text", 0)
-        box1.pack_start(treeview, False, True, 0)
+        box1.pack_start(treeview, True, True, 0)
 
         notebook1 = Gtk.Notebook()
         sw1 = Gtk.ScrolledWindow()
@@ -96,11 +97,14 @@ class Pgangel():
     def on_delete(self, *args):
         Gtk.main_quit(args)
 
-    def on_toolbutton1_clicked(self, *args):
+    def on_toolbutton_expander_clicked(self, *args):
         if self.revealer1.get_reveal_child():
             self.revealer1.set_reveal_child(False)
         else:
             self.revealer1.set_reveal_child(True)
+
+    def on_toolbutton_new_tab_clicked(self, *args):
+        self.statusbar1.push(self.sb_context_id, 'new tab opened...')
 
 
 if __name__ == '__main__':
