@@ -49,6 +49,8 @@ class DBConnection(object):
 class DBCursor(object):
     def __init__(self, dbconnection):
         self.dbconnection = dbconnection
+        if not dbconnection.connection:
+            dbconnection.try_connect()
         self.cursor = dbconnection.connection.cursor(cursor_factory=psycopg2.extras.DictCursor)
         #self.columns = None
 
