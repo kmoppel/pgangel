@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from gi.repository import Gtk
+import pgangel_db
 import pgangel_gui
 import pgangel_conf
 
@@ -31,7 +32,10 @@ class Pgangel():
         self.paned1 = None
         ''':type : gtk.Paned'''
 
-        self.db_servers = None
+        self.servers = [] #DbServer
+        # self.servers_list_store = None
+        self.current_server = ''
+        self.current_db_connection = None
         # ''':type : list(pgangel_db.DbServer)'''
         # self.db_servers[0].
 
@@ -49,6 +53,11 @@ class Pgangel():
         self.statusbar1.push(self.sb_context_id, 'statusbar...')
         self.paned1 = builder.get_object("paned1")
         ''':type : gtk.Paned'''
+        self.combobox_servers = builder.get_object("combobox_servers")
+        ''':type : gtk.ComboBox'''
+        renderer_text = Gtk.CellRendererText()
+        self.combobox_servers.pack_start(renderer_text, True)
+        self.combobox_servers.add_attribute(renderer_text, "text", 0)
 
         tb_builder = Gtk.Builder()
         tb_builder.add_from_file("resources/treebox.xml")
@@ -93,6 +102,14 @@ class Pgangel():
         self.paned1.add2(notebook2)
         self.paned1.set_position(450)
 
+    def set_servers(self, servers):
+        self.servers = []
+        servers_list_store = Gtk.ListStore(str)
+        servers_list_store.append([''])
+        for s in servers:
+            self.servers.append(s)
+            servers_list_store.append([s.name])
+        self.combobox_servers.set_model(servers_list_store)
 
     def on_delete(self, *args):
         Gtk.main_quit(args)
@@ -106,6 +123,24 @@ class Pgangel():
     def on_toolbutton_new_tab_clicked(self, *args):
         self.statusbar1.push(self.sb_context_id, 'new tab opened...')
 
+    def on_combobox_servers_changed(self, *args):
+        pass
+
+    def on_button_manage_servers_clicked(self, *args):
+        self.statusbar1.push(self.sb_context_id, 'on_button_manage_servers_clicked...')
+
+    def on_button_connect_clicked(self, *args):
+        i = self.combobox_servers.get_active()
+        if i == 0:
+            return
+        model = self.combobox_servers.get_model()
+        server_name = model[i][0]
+        if self.current_server == server_name:
+            return
+        # connect
+        s = self.servers[i]
+        self.current_db_connection = pgangel_db.DBConnection(s.host, s.port, s.dbname, s.user)
+        self.statusbar1.push(self.sb_context_id, 'connection OK - [{}@{}:{}/{}]'.format(s.user, s.host, s.port, s.dbname))
 
 if __name__ == '__main__':
     pgangel_conf.ensure_app_folder_and_configs()
@@ -113,14 +148,14 @@ if __name__ == '__main__':
     pga = Pgangel()
     pga.build()
 
-    pga.db_servers = pgangel_conf.get_saved_servers()
-    if len(pga.db_servers) == 0:   # offer to create a server first
+    pga.servers = pgangel_conf.get_saved_servers()
+    if len(pga.servers) == 0:   # offer to create a server first
 #        ns = pgangel_gui.NewServer(pga)
         ns = pgangel_gui.ServerDialog()
         ns.build()
 #        ns.run()
 #        ns.destroy()
-    pga.db_servers = pgangel_conf.get_saved_servers()   # refresh
+    pga.set_servers(pgangel_conf.get_saved_servers())   # refresh
 
     pga.window.show_all()
     Gtk.main()

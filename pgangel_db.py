@@ -51,6 +51,7 @@ class DBCursor():
         self.dbconnection = dbconnection
         self.cursor = dbconnection.cursor(cursor_factory=psycopg2.extras.DictCursor)
         self.columns = None
+        self.dataset = None
 
     def execute_query(self, query):
         try:
@@ -63,3 +64,26 @@ class DBCursor():
 
     def __exit__(self):
         self.cursor.close()
+
+class DbServer():
+
+    def __init__(self, name, host, port, dbname, user):
+        self.name = name
+        self.host = host
+        self.port = port
+        self.dbname = dbname
+        self.user = user
+        self.tags = None    # TODO
+        self.save_password = None    # TODO
+
+    def __str__(self):
+        return json.dumps(self.__dict__)
+
+
+
+if __name__ == '__main__':
+    dbc = DBConnection('localhost', '5432', 'postgres', 'kmoppel', '')
+    dbs = DbServer('srv1', 'local', '5432', 'postgres', 'kmoppel')
+    # print dbc.try_connect()
+    print dbs
+
