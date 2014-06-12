@@ -24,7 +24,7 @@ def get_saved_servers():
             db = DbServer()
             db.name = s['name']
             password = get_password_from_passwords_file(s['db_conn']['host'], s['db_conn']['user'])
-            db.db_conn = DBConnection(s['db_conn']['host'], s['db_conn']['port'], s['db_conn']['db'], s['db_conn']['user'], password)
+            # db.db_conn = DBConnection(s['db_conn']['host'], s['db_conn']['port'], s['db_conn']['db'], s['db_conn']['user'], password)
             # print db
             ret.append(db)
     return ret
