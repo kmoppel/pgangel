@@ -5,6 +5,7 @@ from gi.repository import Gtk
 import pgangel_db
 import pgangel_gui
 import pgangel_conf
+import pgangel_misc
 
 def add_text_view_tab_to_notebook(notebook, label):
     scrolled_window = Gtk.ScrolledWindow()
@@ -13,8 +14,15 @@ def add_text_view_tab_to_notebook(notebook, label):
     textview = Gtk.TextView()
     scrolled_window.add(textview)
     notebook.append_page(scrolled_window, Gtk.Label(label))
-    return textview
+    return textview, scrolled_window
 
+def add_element_to_notebook(notebook, element, label):
+    scrolled_window = Gtk.ScrolledWindow()
+    scrolled_window.set_hexpand(True)
+    scrolled_window.set_vexpand(True)
+    scrolled_window.add(element)
+    notebook.append_page(scrolled_window, Gtk.Label(label))
+    return element, scrolled_window
 
 class Pgangel():
 
@@ -31,9 +39,13 @@ class Pgangel():
         self.sb_context_id = None
         self.paned1 = None
         ''':type : gtk.Paned'''
+        self.notebook1 = None
+        ''':type : gtk.Notebook'''
+        self.notebook2 = None
+        ''':type : gtk.Notebook'''
 
         self.sql_tab1 = None
-        self.out_tab1 = None
+        self.output_tab = None
         self.servers = [] #DbServer
         # self.servers_list_store = None
         self.current_server = ''
@@ -85,7 +97,7 @@ class Pgangel():
         treeviewcolumn.add_attribute(cellrenderertext, "text", 0)
         box1.pack_start(treeview, True, True, 0)
 
-        notebook1 = Gtk.Notebook()
+        self.notebook1 = Gtk.Notebook()
         sw1 = Gtk.ScrolledWindow()
         sw1.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
 
@@ -94,14 +106,17 @@ class Pgangel():
         textview1.set_hexpand(True)
         sw1.add(textview1)
 
-        self.sql_tab1 = add_text_view_tab_to_notebook(notebook1, 'sql tab 1')
+        self.sql_tab1, scrollview = add_text_view_tab_to_notebook(self.notebook1, 'sql tab 1')
         # TODO need to map tabs to connections
 
-        notebook2 = Gtk.Notebook()
-        self.out_tab1 = add_text_view_tab_to_notebook(notebook2, 'data output')
+        self.notebook2 = Gtk.Notebook()
 
-        self.paned1.add1(notebook1)
-        self.paned1.add2(notebook2)
+        self.output_tab, self.output_tab_scrollview  = add_text_view_tab_to_notebook(self.notebook2, 'Data output')
+        self.messages_tab, self.messages_tab_scrollview = add_text_view_tab_to_notebook(self.notebook2, 'Messages')
+        self.history_tab, self.history_tab_scrollview =  add_text_view_tab_to_notebook(self.notebook2, 'History')
+
+        self.paned1.add1(self.notebook1)
+        self.paned1.add2(self.notebook2)
         self.paned1.set_position(450)
 
     def set_servers(self, servers):
@@ -141,9 +156,8 @@ class Pgangel():
             return
         # connect
         s = self.servers[i]
-        print s
         self.current_db_connection = pgangel_db.DBConnection(s.host, s.port, s.dbname, s.user)
-        self.statusbar1.push(self.sb_context_id, 'connection OK - [{}@{}:{}/{}]'.format(s.user, s.host, s.port, s.dbname))
+        self.statusbar1.push(self.sb_context_id, 'connection OK - [{}@{}:{}/{}]'.format(s.user, s.host, s.port, s.dbname))  # TODO add timestamp
 
     def on_toolbutton_execute_clicked(self, *args):
         buf = self.sql_tab1.get_buffer()
@@ -152,8 +166,15 @@ class Pgangel():
         cur = pgangel_db.DBCursor(self.current_db_connection)
         cur.execute_query(text)
         data = cur.cursor.fetchall()
-        out_buff = self.out_tab1.get_buffer()
-        out_buff.set_text(str(data))
+        print data
+        columns = ['No results']
+        if len(data) > 0:
+            columns = data[0].keys()
+        grid = pgangel_misc.create_gridview_from_column_list_and_dict_list(columns, data)
+        print grid
+        self.notebook2.remove_page(0)
+        add_element_to_notebook(self.notebook2, grid, 'Data output') # Does not work!
+
 
 
 
