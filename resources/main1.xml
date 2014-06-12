@@ -248,12 +248,13 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkToolButton" id="toolbutton6">
+                  <object class="GtkToolButton" id="toolbutton_execute">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="label" translatable="yes">toolbutton6</property>
                     <property name="use_underline">True</property>
                     <property name="stock_id">gtk-apply</property>
+                    <signal name="clicked" handler="on_toolbutton_execute_clicked" swapped="no"/>
                   </object>
                   <packing>
                     <property name="expand">False</property>

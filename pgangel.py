@@ -32,6 +32,8 @@ class Pgangel():
         self.paned1 = None
         ''':type : gtk.Paned'''
 
+        self.sql_tab1 = None
+        self.out_tab1 = None
         self.servers = [] #DbServer
         # self.servers_list_store = None
         self.current_server = ''
@@ -92,11 +94,11 @@ class Pgangel():
         textview1.set_hexpand(True)
         sw1.add(textview1)
 
-        sql_tab1 = add_text_view_tab_to_notebook(notebook1, 'sql tab 1')
+        self.sql_tab1 = add_text_view_tab_to_notebook(notebook1, 'sql tab 1')
         # TODO need to map tabs to connections
 
         notebook2 = Gtk.Notebook()
-        add_text_view_tab_to_notebook(notebook2, 'data output')
+        self.out_tab1 = add_text_view_tab_to_notebook(notebook2, 'data output')
 
         self.paned1.add1(notebook1)
         self.paned1.add2(notebook2)
@@ -141,6 +143,13 @@ class Pgangel():
         s = self.servers[i]
         self.current_db_connection = pgangel_db.DBConnection(s.host, s.port, s.dbname, s.user)
         self.statusbar1.push(self.sb_context_id, 'connection OK - [{}@{}:{}/{}]'.format(s.user, s.host, s.port, s.dbname))
+
+    def on_toolbutton_execute_clicked(self, *args):
+        buf = self.sql_tab1.get_buffer()
+        start, end = buf.get_bounds()
+        text = buf.get_text(start, end, True)
+        cur = pgangel_db.DBCursor(current_db_connection)
+
 
 if __name__ == '__main__':
     pgangel_conf.ensure_app_folder_and_configs()
