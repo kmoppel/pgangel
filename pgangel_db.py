@@ -50,13 +50,16 @@ class DBCursor():
     def __init__(self, dbconnection):
         self.dbconnection = dbconnection
         self.cursor = dbconnection.cursor(cursor_factory=psycopg2.extras.DictCursor)
-        self.dataset = None
+        self.columns = None
 
     def execute_query(self, query):
         try:
             self.cursor.execute(query)
-
+            columns = [desc[0] for desc in cur.description]
             return True
         except Exception as e:
             print e
         return False
+
+    def __exit__(self):
+        self.cursor.close()
