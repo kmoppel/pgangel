@@ -1,12 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import os
+import re
 import psycopg2
 import psycopg2.extras
 import json
 
 class DBConnection():
-
+2
     def __init__(self, host, port, db, user, password=None):
         self.host = host
         self.port = port
