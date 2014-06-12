@@ -22,5 +22,6 @@ def get_db_cursor(db_host, db_name, db_port='5432', db_user=None, db_pass=None):
                 db_pass = db_pass or auth_parts[4]
     conn_string = r'host=' + db_host + r' dbname=' + db_name + ' port=' + db_port + r' user=' + db_user + r' password=' + db_pass
     db_conn = psycopg2.connect(conn_string)
-    db_cur = db_conn.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
+    db_conn.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
+    db_cur = db_conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
     return db_cur
