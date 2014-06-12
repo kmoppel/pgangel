@@ -8,15 +8,15 @@ import psycopg2.extras
 import json
 
 
-class DBConnection():
+class DBConnection(object):
 
-    def __init__(self, host, port, database, username=None, password=None):
+    def __init__(self, host, database, port='5432', username=None, password=None):
         if not (username and password):
             auths = []
             try:
                 pgpass = os.path.expanduser('~/.pgpass')
                 auths = [re.sub('#.*$|\n', '', line) for line in open( pgpass, r'r') if not re.match('#.*', line.strip())]
-                auths = [line.replace('*', '.*') for line in auths]   #pgpass *'s are converted to .*'s
+                auths = [re.sub('\.\*|\*', '.*', line) for line in auths]   #pgpass *'s are converted to .*'s
             except Exception as e:
                 print e
                 pass
@@ -26,8 +26,8 @@ class DBConnection():
                     username = username or auth_parts[3]
                     password = password or auth_parts[4]
         self.host = host
-        self.port = port
         self.database = database
+        self.port = port
         self.username = username
         self.password = password
         self.connection = None
@@ -46,17 +46,18 @@ class DBConnection():
             self.connection.close()
 
 
-class DBCursor():
+class DBCursor(object):
     def __init__(self, dbconnection):
         self.dbconnection = dbconnection
-        self.cursor = dbconnection.cursor(cursor_factory=psycopg2.extras.DictCursor)
-        self.columns = None
-        self.dataset = None
+        if not dbconnection.connection:
+            dbconnection.try_connect()
+        self.cursor = dbconnection.connection.cursor(cursor_factory=psycopg2.extras.DictCursor)
+        #self.columns = None
 
     def execute_query(self, query):
         try:
             self.cursor.execute(query)
-            self.columns = [desc[0] for desc in self.cursor.description]
+            #self.columns = [desc[0] for desc in self.cursor.description]
             return True
         except Exception as e:
             print e
