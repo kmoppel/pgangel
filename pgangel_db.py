@@ -55,7 +55,7 @@ class DBCursor():
     def execute_query(self, query):
         try:
             self.cursor.execute(query)
-            columns = [desc[0] for desc in cur.description]
+            self.columns = [desc[0] for desc in self.cursor.description]
             return True
         except Exception as e:
             print e
