@@ -10,7 +10,7 @@ import json
 
 class DBConnection(object):
 
-    def __init__(self, host, database, port='5432', username=None, password=None):
+    def __init__(self, host, port, database, username=None, password=None):
         if not (username and password):
             auths = []
             try:
@@ -26,13 +26,13 @@ class DBConnection(object):
                     username = username or auth_parts[3]
                     password = password or auth_parts[4]
         self.host = host
-        self.database = database
         self.port = port
+        self.database = database
         self.username = username
         self.password = password
         self.connection = None
 
-    def try_connect(self):
+    def connect(self):
         try:
             self.connection = psycopg2.connect(host=self.host, port=self.port, dbname=self.database, user=self.username, password=self.password)
             self.connection.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
@@ -49,8 +49,8 @@ class DBConnection(object):
 class DBCursor(object):
     def __init__(self, dbconnection):
         self.dbconnection = dbconnection
-        if not dbconnection.connection:
-            dbconnection.try_connect()
+        if dbconnection.connection is None:
+            print dbconnection.connect()
         self.cursor = dbconnection.connection.cursor(cursor_factory=psycopg2.extras.DictCursor)
         #self.columns = None
 

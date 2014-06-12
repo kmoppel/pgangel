@@ -141,6 +141,7 @@ class Pgangel():
             return
         # connect
         s = self.servers[i]
+        print s
         self.current_db_connection = pgangel_db.DBConnection(s.host, s.port, s.dbname, s.user)
         self.statusbar1.push(self.sb_context_id, 'connection OK - [{}@{}:{}/{}]'.format(s.user, s.host, s.port, s.dbname))
 
@@ -148,7 +149,12 @@ class Pgangel():
         buf = self.sql_tab1.get_buffer()
         start, end = buf.get_bounds()
         text = buf.get_text(start, end, True)
-        cur = pgangel_db.DBCursor(current_db_connection)
+        cur = pgangel_db.DBCursor(self.current_db_connection)
+        cur.execute_query(text)
+        data = cur.cursor.fetchall()
+        out_buff = self.out_tab1.get_buffer()
+        out_buff.set_text(str(data))
+
 
 
 if __name__ == '__main__':
