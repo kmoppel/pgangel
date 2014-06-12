@@ -52,32 +52,11 @@ class DBCursor():
         self.cursor = dbconnection.cursor(cursor_factory=psycopg2.extras.DictCursor)
         self.dataset = None
 
-    def execute_query(self, callback, sql, params):
-        thread_handle = 'create a newthread....' # TODO dataset will be filled when thread finishes. some callback neededed
-        # cur = self.connection.cursor(cursor_)
-        # cur.execute(sql, params)
-        return thread_handle
-        # return [{'a' : 1}]
+    def execute_query(self, query):
+        try:
+            self.cursor.execute(query)
 
-#class DbServer():
-#
-#    def __init__(self, name=None, db_conn=None):
-#        self.name = name
-#        self.db_conn = db_conn
-#        self.tags = None    # TODO
-#        self.save_password = None    # TODO
-#
-#    def __str__(self):
-#        vars=dict(self.db_conn.__dict__)
-#        vars.pop('connection')
-#        vars.pop('cursor')
-#        vars.pop('password')
-#        vars.pop('dataset')
-#        return '''{"name": "''' + self.name  + '''", "db_conn":''' + json.dumps(vars) + '}'
-#
-
-if __name__ == '__main__':
-    dbc = DBConnection('localhost', 5432, 'postgres', 'kmoppel', '')
-    dbs = DbServer('srv1', dbc)
-    # print dbc.try_connect()
-    print dbs
+            return True
+        except Exception as e:
+            print e
+        return False
