@@ -6,6 +6,7 @@ import re
 import psycopg2
 import psycopg2.extras
 import json
+import threading
 
 
 class DBConnection(object):
@@ -50,18 +51,31 @@ class DBCursor(object):
     def __init__(self, dbconnection):
         self.dbconnection = dbconnection
         if dbconnection.connection is None:
-            print dbconnection.connect()
+            dbconnection.connect()
         self.cursor = dbconnection.connection.cursor(cursor_factory=psycopg2.extras.DictCursor)
-        #self.columns = None
+
+    def get_columns(self):
+        return [desc[0] for desc in self.cursor.description] if self.cursor else None
+
+    def get_row_count(self):
+        return self.cursor.rowcount
+
+    def get_dataset(self):
+        cstore = {}
+        for row in self.cursor:
+            for col in self.get_columns():
+                data = row[col]
+                cstore[col] = cstore[col].append(data) if cstore.get(col, None) else [data]
 
     def execute_query(self, query):
         try:
+            #t = threading.Thread(target=self.cursor.execute, args=(str(query)))
+            #t.daemon = True
+            #t.start()
             self.cursor.execute(query)
-            #self.columns = [desc[0] for desc in self.cursor.description]
-            return True
         except Exception as e:
             print e
-        return False
+        return self.get_row_count()
 
     def __exit__(self):
         self.cursor.close()
