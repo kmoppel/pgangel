@@ -52,7 +52,7 @@ class DBCursor():
         self.cursor = dbconnection.cursor(cursor_factory=psycopg2.extras.DictCursor)
         self.dataset = None
 
-    def execution_query(self, callback, sql, params):
+    def execute_query(self, callback, sql, params):
         thread_handle = 'create a newthread....' # TODO dataset will be filled when thread finishes. some callback neededed
         # cur = self.connection.cursor(cursor_)
         # cur.execute(sql, params)
