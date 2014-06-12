@@ -111,9 +111,11 @@ if __name__ == '__main__':
 
     pga.db_servers = pgangel_conf.get_saved_servers()
     if len(pga.db_servers) == 0:   # offer to create a server first
-        ns = pgangel_gui.NewServer(pga)
-        ns.run()
-        ns.destroy()
+#        ns = pgangel_gui.NewServer(pga)
+        ns = pgangel_gui.ServerDialog()
+        ns.build()
+#        ns.run()
+#        ns.destroy()
     pga.db_servers = pgangel_conf.get_saved_servers()   # refresh
 
     pga.window.show_all()

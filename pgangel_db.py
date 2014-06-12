@@ -38,13 +38,18 @@ class DBConnection():
             print e
             return False
 
-    def send_query_for_execution(self, callback, sql, params):
+class DBCursor():
+    def __init__(self, dbconnection):
+        self.dbconnection = dbconnection
+        self.cursor = dbconnection.cursor(cursor_factory=psycopg2.extras.DictCursor)
+        self.dataset = None
+
+    def execution_query(self, callback, sql, params):
         thread_handle = 'create a newthread....' # TODO dataset will be filled when thread finishes. some callback neededed
         # cur = self.connection.cursor(cursor_)
         # cur.execute(sql, params)
         return thread_handle
         # return [{'a' : 1}]
-
 
 class DbServer():
 
