@@ -9,13 +9,25 @@ import json
 
 class DBConnection():
 2
-    def __init__(self, host, port, db, user, password=None):
+    def __init__(self, host, database, port='5432', username=None, password=None):
+        if not (username and password):
+            pgpass = os.path.expanduser('~/.pgpass')
+            auths = [re.sub('#.*$|\n', '', line) for line in open( pgpass, r'r') if not re.match('#.*', line.strip())]
+            auths = [line.replace('*', '.*') for line in auths]   #pgpass *'s are converted to .*'s
+            for auth in auths:
+                auth_parts = auth.split(':')    #host:port:database:user:pass
+                if re.match(auth_parts[0], host) and re.match(auth_parts[1], port) and re.match(auth_parts[2], database):
+                    username = username or auth_parts[3]
+                    password = password or auth_parts[4]
+        db_conn = psycopg2.connect(host=self.host, port=self.port, username=self.username,password=self.password)
+        db_conn.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
         self.host = host
         self.port = port
-        self.db = db
-        self.user = user
+        self.database = database
+        self.username = username
         self.password = password
-        self.connection = None
+        self.connection = db_conn
+        self.cursor = db_conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
         self.dataset = None
 
     def try_connect(self):
