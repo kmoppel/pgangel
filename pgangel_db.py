@@ -53,19 +53,17 @@ class DBCursor(object):
         if dbconnection.connection is None:
             dbconnection.connect()
         self.cursor = dbconnection.connection.cursor(cursor_factory=psycopg2.extras.DictCursor)
+        self.rowcount = None
+        self.cstore = None
+        self.columns = None
 
-    def get_columns(self):
-        return [desc[0] for desc in self.cursor.description] if self.cursor else None
-
-    def get_row_count(self):
-        return self.cursor.rowcount
-
-    def get_dataset(self):
-        cstore = {}
-        for row in self.cursor:
-            for col in self.get_columns():
-                data = row[col]
-                cstore[col] = cstore[col].append(data) if cstore.get(col, None) else [data]
+    #def get_dataset(self):
+    #    cstore = {}
+    #    for row in self.cursor:
+    #        for col in self.get_columns():
+    #            data = row[col]
+    #            cstore[col] = cstore[col].append(data) if cstore.get(col, None) else [data]
+    #    return cstore
 
     def execute_query(self, query):
         try:
@@ -73,9 +71,16 @@ class DBCursor(object):
             #t.daemon = True
             #t.start()
             self.cursor.execute(query)
+            self.columns = [desc[0] for desc in self.cursor.description]
+            self.rowcount = self.cursor.rowcount
+            self.cstore = {}
+            for row in self.cursor:
+                for col in self.columns:
+                    data = row[col]
+                    self.cstore[col] = self.cstore[col].append(data) if self.cstore.get(col, None) else [data]
         except Exception as e:
             print e
-        return self.get_row_count()
+        return self.rowcount
 
     def __exit__(self):
         self.cursor.close()
