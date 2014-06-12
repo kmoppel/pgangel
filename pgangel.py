@@ -5,6 +5,16 @@ from gi.repository import Gtk
 import pgangel_gui
 import pgangel_conf
 
+def add_text_view_tab_to_notebook(notebook, label):
+    scrolled_window = Gtk.ScrolledWindow()
+    scrolled_window.set_hexpand(True)
+    scrolled_window.set_vexpand(True)
+    textview = Gtk.TextView()
+    scrolled_window.add(textview)
+    notebook.append_page(scrolled_window, Gtk.Label(label))
+    return textview
+
+
 class Pgangel():
 
     def __init__(self):
@@ -15,11 +25,15 @@ class Pgangel():
         self.revealer1 = None
         self.treeBarBox = None
         ''':type : gtk.HBox'''
+        self.statusbar1 = None
+        ''':type : gtk.Statusbar'''
+        self.sb_context_id = None
+        self.paned1 = None
+        ''':type : gtk.Paned'''
 
         self.db_servers = None
         # ''':type : list(pgangel_db.DbServer)'''
         # self.db_servers[0].
-
 
     def build(self):
         builder = Gtk.Builder()
@@ -30,34 +44,53 @@ class Pgangel():
         ''':type : gtk.Window'''
         self.toolbutton1 = builder.get_object("toolbutton1")
         self.revealer1 = builder.get_object("revealer1")
+        self.statusbar1 = builder.get_object("statusbar1")
+        self.sb_context_id = self.statusbar1.get_context_id('messages')
+        self.statusbar1.push(self.sb_context_id, 'statusbar...')
+        self.paned1 = builder.get_object("paned1")
+        ''':type : gtk.Paned'''
 
         tb_builder = Gtk.Builder()
         tb_builder.add_from_file("resources/treebox.xml")
         # tb_builder.connect_signals(self)
         box1 = tb_builder.get_object("box1")
-        liststore = Gtk.ListStore(str, int)
-        liststore.append(["Oranges", 5])
-        liststore.append(["Apples", 3])
-        liststore.append(["Bananas", 1])
-        liststore.append(["Tomatoes", 4])
-        liststore.append(["Cucumber", 1])
-        treeview = Gtk.TreeView(model=liststore)
+        self.revealer1.add(box1)
 
-        treeviewcolumn = Gtk.TreeViewColumn("Item")
+        treestore = Gtk.TreeStore(str)
+        dog = treestore.append(None, ["Dog"])
+        treestore.append(dog, ["Fido"])
+        treestore.append(dog, ["Spot"])
+        cat = treestore.append(None, ["Cat"])
+        treestore.append(cat, ["Ginger"])
+        rabbit = treestore.append(None, ["Rabbit"])
+        treestore.append(rabbit, ["Twitch"])
+        treestore.append(rabbit, ["Floppy"])
+        treeview = Gtk.TreeView(model=treestore)
+        treeviewcolumn = Gtk.TreeViewColumn("Pet Names")
         treeview.append_column(treeviewcolumn)
         cellrenderertext = Gtk.CellRendererText()
         treeviewcolumn.pack_start(cellrenderertext, True)
         treeviewcolumn.add_attribute(cellrenderertext, "text", 0)
-
-        treeviewcolumn = Gtk.TreeViewColumn("Quantity")
-        treeview.append_column(treeviewcolumn)
-        cellrenderertext = Gtk.CellRendererText()
-        treeviewcolumn.pack_start(cellrenderertext, True)
-        treeviewcolumn.add_attribute(cellrenderertext, "text", 1)
-
         box1.pack_start(treeview, False, True, 0)
 
-        self.revealer1.add(box1)
+        notebook1 = Gtk.Notebook()
+        sw1 = Gtk.ScrolledWindow()
+        sw1.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
+
+        textview1 = Gtk.TextView()
+        textview1.set_vexpand(True)
+        textview1.set_hexpand(True)
+        sw1.add(textview1)
+
+        sql_tab1 = add_text_view_tab_to_notebook(notebook1, 'sql tab 1')
+        # TODO need to map tabs to connections
+
+        notebook2 = Gtk.Notebook()
+        add_text_view_tab_to_notebook(notebook2, 'data output')
+
+        self.paned1.add1(notebook1)
+        self.paned1.add2(notebook2)
+        self.paned1.set_position(450)
 
 
     def on_delete(self, *args):
