@@ -8,7 +8,7 @@ import psycopg2.extras
 import json
 
 
-class DBConnection():
+class DBConnection(object):
 
     def __init__(self, host, database, port='5432', username=None, password=None):
         if not (username and password):
@@ -46,12 +46,11 @@ class DBConnection():
             self.connection.close()
 
 
-class DBCursor():
+class DBCursor(object):
     def __init__(self, dbconnection):
         self.dbconnection = dbconnection
-        self.cursor = dbconnection.cursor(cursor_factory=psycopg2.extras.DictCursor)
+        self.cursor = dbconnection.connection.cursor(cursor_factory=psycopg2.extras.DictCursor)
         #self.columns = None
-        #self.dataset = None
 
     def execute_query(self, query):
         try:
