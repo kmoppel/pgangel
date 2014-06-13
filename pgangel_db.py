@@ -89,23 +89,6 @@ class DBCursor(object):
                 self.available = True
                 print e
 
-    def cancel_query(self):
-        status = False
-        if self.thread:
-            if self.thread.isAlive():
-                try:
-                    pid = self.dbconnection.get_backend_pid()
-                    self.cursor.execute('select pg_terminate_backend(' + str(pid) + ') AS status')
-                    for row in self.cursor:
-                        status = row['status']
-                    if status:
-                        self.available = True
-                        self.running = False
-                        self.thread = None
-                except Exception as e:
-                    print('Thread could not be terminated:' + e.message)
-        return status
-
     def __exit__(self):
         self.cursor.close()
 
@@ -123,6 +106,28 @@ class DbServer():
     def __str__(self):
         return json.dumps(self.__dict__)
 
+    def cancel_query(self, dbcursor):
+        status = False
+        if dbcursor.thread:
+            if dbcursor.thread.isAlive():
+                try:
+                    pid = dbcursor.dbconnection.connection.get_backend_pid()
+                    conn = DBConnection(dbcursor.dbconnection.host,
+                                        dbcursor.dbconnection.port,
+                                        dbcursor.dbconnection.database,
+                                        dbcursor.dbconnection.username,
+                                        dbcursor.dbconnection.password)
+                    cur = DBCursor(conn)
+                    cur.cursor.execute('select pg_terminate_backend(' + str(pid) + ') AS status')
+                    for row in cur.cursor:
+                        status = row['status']
+                    if status:
+                        dbcursor.available = True
+                        dbcursor.running = False
+                        dbcursor.thread = None
+                except Exception as e:
+                    print('Thread could not be terminated:' + e.message)
+        return status
 
 
 if __name__ == '__main__':
