@@ -6,6 +6,7 @@ import pgangel_db
 import pgangel_gui
 import pgangel_conf
 import pgangel_misc
+import pgangel_connection_pool
 
 def add_text_view_tab_to_notebook(notebook, label):
     scrolled_window = Gtk.ScrolledWindow()
@@ -52,6 +53,7 @@ class Pgangel():
         self.current_db_connection = None
         # ''':type : list(pgangel_db.DbServer)'''
         # self.db_servers[0].
+        self.connectionPool = pgangel_connection_pool.ConnectionPool()
 
     def build(self):
         builder = Gtk.Builder()
@@ -174,7 +176,6 @@ class Pgangel():
         print grid
         self.notebook2.remove_page(0)
         add_element_to_notebook(self.notebook2, grid, 'Data output') # Does not work!
-
 
 
 
