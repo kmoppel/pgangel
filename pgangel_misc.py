@@ -4,6 +4,10 @@
 from gi.repository import Gtk
 
 def create_gridview_from_column_list_and_dict_list(columns_list, dict_list):
+    scrolled_window = Gtk.ScrolledWindow()
+    scrolled_window.set_hexpand(True)
+    scrolled_window.set_vexpand(True)
+
     types_list = [ type(x) for x in columns_list ]
     liststore = Gtk.ListStore(*types_list)
 
@@ -22,7 +26,8 @@ def create_gridview_from_column_list_and_dict_list(columns_list, dict_list):
         treeviewcolumn.pack_start(cellrenderertext, True)
         treeviewcolumn.add_attribute(cellrenderertext, "text", i)
 
-    return treeview
+    scrolled_window.add(treeview)
+    return scrolled_window
 
 
 if __name__ == '__main__':
@@ -31,16 +36,11 @@ if __name__ == '__main__':
     window.set_default_size(500, 300)
     window.connect("destroy", lambda q: Gtk.main_quit())
 
-    scrolled_window = Gtk.ScrolledWindow()
-    scrolled_window.set_hexpand(True)
-    scrolled_window.set_vexpand(True)
-
     data = []
     for i in xrange(1,200):
         data.append({'col1':'aa'+str(i), 'col2':'val'+str(i)})
     gv = create_gridview_from_column_list_and_dict_list(['col1', 'col2'], data)
-    scrolled_window.add(gv)
-    window.add(scrolled_window)
+    window.add(gv)
 
     window.show_all()
     Gtk.main()

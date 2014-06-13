@@ -8,6 +8,33 @@ import psycopg2.extras
 import json
 import threading
 import time
+import collections
+
+class HostMetadata():
+
+    def __init__(self):
+        self.databases = []
+        self.schemas = []
+        self.tables_by_schemas = collections.defaultdict(list)
+        self.views_by_schemas = collections.defaultdict(list)
+
+    def populate_metadata(self, conn):
+        q_dbs = '''select datname from pg_database where not datistemplate order by 1'''
+        q_tables = '''select table_catalog, table_schema, table_name from information_schema.tables where table_schema not in ('pg_catalog', 'information_schema')'''
+        q_views = '''select table_catalog, table_schema, table_name from information_schema.views where table_schema not in ('pg_catalog', 'information_schema')'''
+        cur = DBCursor(conn)
+        self.databases = [ x[0] for x in cur.execute_query_blocking(q_dbs) ]
+        all_tables = cur.execute_query_blocking(q_tables)
+        for t in all_tables:
+            if t['table_schema'] not in self.schemas:
+                self.schemas.append(t['table_schema'])
+            self.tables_by_schemas[t['table_schema']].append(t['table_name'])
+        all_views = cur.execute_query_blocking(q_views)
+        for t in all_views:
+            if t['table_schema'] not in self.schemas:
+                self.schemas.append(t['table_schema'])
+            self.views_by_schemas[t['table_schema']].append(t['table_name'])
+
 
 class DBConnection(object):
 
@@ -32,6 +59,8 @@ class DBConnection(object):
         self.username = username
         self.password = password
         self.connection = None
+        self.metadata = None
+        ''':type: HostMetadata'''
 
     def connect(self):
         try:
@@ -46,6 +75,10 @@ class DBConnection(object):
         if self.connection:
             self.connection.close()
 
+    def get_metadata(self):
+        hm = HostMetadata()
+        hm.populate_metadata(self)
+        return hm
 
 class DBCursor(object):
     def __init__(self, dbconnection):
@@ -54,12 +87,14 @@ class DBCursor(object):
             dbconnection.connect()
         self.cursor = dbconnection.connection.cursor(cursor_factory=psycopg2.extras.DictCursor)
         self.rowcount = None
-        self.cstore = None
+        # self.cstore = None
         self.columns = None
+        self.datarows = None
         self.running = False
         self.available = True           #e.g. after data is offloaded
         self.thread = None
         ''':type : threading.Thread'''
+        self.callback = None
 
     def process_query(self, query):
         self.running = True
@@ -67,20 +102,32 @@ class DBCursor(object):
             self.cursor.execute(query)
             self.columns = [desc[0] for desc in self.cursor.description]
             self.rowcount = self.cursor.rowcount
-            self.cstore = {}
-            for row in self.cursor:
-                for col in self.columns:
-                    data = row[col]
-                    if not self.cstore.get(col, None):
-                        self.cstore[col] = []
-                    self.cstore[col].append(data)
+            self.datarows = self.cursor.fetchall()
+            # self.cstore = {}
+            # for row in self.cursor:
+            #     for col in self.columns:
+            #         data = row[col]
+            #         if not self.cstore.get(col, None):
+            #             self.cstore[col] = []
+            #         self.cstore[col].append(data)
         except Exception as e:
             print e
         self.running = False
+        self.callback()
 
-    def execute_query(self, query):
+    def execute_query_blocking(self, query):
+        result = None
+        try:
+            self.cursor.execute(query)
+            result = self.cursor.fetchall()
+        except Exception as e:
+            print e
+        return result
+
+    def execute_query(self, query, callback):
         if self.available:
             try:
+                self.callback = callback
                 self.available = False
                 self.thread = threading.Thread(target=self.process_query, args=(query,))
                 self.thread.daemon = True
@@ -121,9 +168,14 @@ if __name__ == '__main__':
     dbc = DBConnection('localhost', '5432', 'postgres', 'kmoppel', '')
     # dbs = DbServer('srv1', 'local', '5432', 'postgres', 'kmoppel')
     # print dbc.try_connect()
-    print dbc
-    cur = DBCursor(dbc)
-    cur.execute_query('select pg_sleep(10)')
-    time.sleep(5)
-    cur.cancel_query()
-
+    # print dbc
+    # cur = DBCursor(dbc)
+    # cur.execute_query('select pg_sleep(10)')
+    # time.sleep(5)
+    # cur.cancel_query()
+    md = HostMetadata()
+    md.populate_metadata(dbc)
+    print md.databases
+    print md.schemas
+    print md.tables_by_schemas
+    print md.views_by_schemas

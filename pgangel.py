@@ -17,13 +17,10 @@ def add_text_view_tab_to_notebook(notebook, label):
     notebook.append_page(scrolled_window, Gtk.Label(label))
     return textview, scrolled_window
 
-def add_element_to_notebook(notebook, element, label):
-    scrolled_window = Gtk.ScrolledWindow()
-    scrolled_window.set_hexpand(True)
-    scrolled_window.set_vexpand(True)
-    scrolled_window.add(element)
-    notebook.append_page(scrolled_window, Gtk.Label(label))
-    return element, scrolled_window
+def replace_tab_in_notebook(notebook, tab_index, new_element, label):
+    notebook.remove_page(tab_index)
+    notebook.insert_page(new_element, Gtk.Label(label), tab_index)
+    notebook.show_all()
 
 class Pgangel():
 
@@ -54,6 +51,14 @@ class Pgangel():
         # ''':type : list(pgangel_db.DbServer)'''
         # self.db_servers[0].
         self.connectionPool = pgangel_connection_pool.ConnectionPool()
+        self.cursor = None
+        self.current_db_metadata = None
+        ''':type : pgangel_db.HostMetadata'''
+        self.treestore = None
+        ''':type : gtk.TreeStore'''
+        self.treeview = None
+        ''':type : gtk.TreeView'''
+
 
     def build(self):
         builder = Gtk.Builder()
@@ -82,22 +87,20 @@ class Pgangel():
         self.revealer1.add(box1)
 
         treestore = Gtk.TreeStore(str)
-        dog = treestore.append(None, ["Dog"])
-        treestore.append(dog, ["Fido"])
-        treestore.append(dog, ["Spot"])
-        cat = treestore.append(None, ["Cat"])
-        treestore.append(cat, ["Ginger"])
-        rabbit = treestore.append(None, ["Rabbit"])
-        treestore.append(rabbit, ["Twitch"])
-        treestore.append(rabbit, ["Floppy"])
+        treestore.append(None, ["Tables"])
+        treestore.append(None, ["Views"])
+
+        self.treestore = treestore
+
         treeview = Gtk.TreeView(model=treestore)
         ''':type : gtk.TreeView'''
-        treeviewcolumn = Gtk.TreeViewColumn("Pet Names")
+        treeviewcolumn = Gtk.TreeViewColumn("Schemas")
         treeview.append_column(treeviewcolumn)
         cellrenderertext = Gtk.CellRendererText()
         treeviewcolumn.pack_start(cellrenderertext, True)
         treeviewcolumn.add_attribute(cellrenderertext, "text", 0)
         box1.pack_start(treeview, True, True, 0)
+        self.treeview = self.treeview
 
         self.notebook1 = Gtk.Notebook()
         sw1 = Gtk.ScrolledWindow()
@@ -148,6 +151,9 @@ class Pgangel():
     def on_button_manage_servers_clicked(self, *args):
         self.statusbar1.push(self.sb_context_id, 'on_button_manage_servers_clicked...')
 
+    def on_combobox_current_db_changed(self, *args):
+        pass
+
     def on_button_connect_clicked(self, *args):
         i = self.combobox_servers.get_active()
         if i == 0:
@@ -159,24 +165,34 @@ class Pgangel():
         # connect
         s = self.servers[i]
         self.current_db_connection = pgangel_db.DBConnection(s.host, s.port, s.dbname, s.user)
+        self.current_db_metadata = self.current_db_connection.get_metadata()
         self.statusbar1.push(self.sb_context_id, 'connection OK - [{}@{}:{}/{}]'.format(s.user, s.host, s.port, s.dbname))  # TODO add timestamp
+
+        treestore = self.treestore
+        treestore.clear()
+        for schema in self.current_db_metadata.schemas:
+            snode = treestore.append(None, [schema])
+            tnode = treestore.append(snode, ["Tables"])
+            vnode = treestore.append(snode, ["Views"])
+            for table in self.current_db_metadata.tables_by_schemas[schema]:
+                treestore.append(tnode, [table])
+            for view in self.current_db_metadata.views_by_schemas[schema]:
+                treestore.append(vnode, [view])
 
     def on_toolbutton_execute_clicked(self, *args):
         buf = self.sql_tab1.get_buffer()
         start, end = buf.get_bounds()
         text = buf.get_text(start, end, True)
-        cur = pgangel_db.DBCursor(self.current_db_connection)
-        cur.execute_query(text)
-        data = cur.cursor.fetchall()
-        print data
-        columns = ['No results']
-        if len(data) > 0:
-            columns = data[0].keys()
-        grid = pgangel_misc.create_gridview_from_column_list_and_dict_list(columns, data)
-        print grid
-        self.notebook2.remove_page(0)
-        add_element_to_notebook(self.notebook2, grid, 'Data output') # Does not work!
 
+        self.cursor = pgangel_db.DBCursor(self.current_db_connection)
+        self.cursor.execute_query(text, self.query_execute_callback)
+
+    def query_execute_callback(self):
+        grid = pgangel_misc.create_gridview_from_column_list_and_dict_list(self.cursor.columns, self.cursor.datarows)
+
+        replace_tab_in_notebook(self.notebook2, 0, grid, 'Data output')
+        self.notebook2.set_current_page(0)
+        self.notebook2.show_all()
 
 
 if __name__ == '__main__':
@@ -187,11 +203,10 @@ if __name__ == '__main__':
 
     pga.servers = pgangel_conf.get_saved_servers()
     if len(pga.servers) == 0:   # offer to create a server first
-#        ns = pgangel_gui.NewServer(pga)
         ns = pgangel_gui.ServerDialog()
         ns.build()
-#        ns.run()
-#        ns.destroy()
+        ns.dialog.run()
+        ns.dialog.destroy()
     pga.set_servers(pgangel_conf.get_saved_servers())   # refresh
 
     pga.window.show_all()
