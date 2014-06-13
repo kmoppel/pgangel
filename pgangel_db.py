@@ -77,7 +77,9 @@ class DBCursor(object):
             for row in self.cursor:
                 for col in self.columns:
                     data = row[col]
-                    self.cstore[col] = self.cstore[col].append(data) if self.cstore.get(col, None) else [data]
+                    if not self.cstore.get(col, None):
+                        self.cstore[col] = []
+                    self.cstore[col].append(data)
         except Exception as e:
             print e
         return self.rowcount
