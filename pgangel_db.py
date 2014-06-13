@@ -90,13 +90,21 @@ class DBCursor(object):
                 print e
 
     def cancel_query(self):
+        status = False
         if self.thread:
             if self.thread.isAlive():
                 try:
-                    self.thread._Thread__stop()
-                    self.thread = None
+                    pid = self.dbconnection.get_backend_pid()
+                    self.cursor.execute('select pg_terminate_backend(' + str(pid) + ') AS status')
+                    for row in self.cursor:
+                        status = row['status']
+                    if status:
+                        self.available = True
+                        self.running = False
+                        self.thread = None
                 except Exception as e:
                     print('Thread could not be terminated:' + e.message)
+        return status
 
     def __exit__(self):
         self.cursor.close()
