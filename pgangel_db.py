@@ -136,14 +136,23 @@ class DBCursor(object):
                 self.available = True
                 print e
 
-    def cancel_query(self):
-        if self.thread:
-            if self.thread.isAlive():
+    def cancel_query(self, dbcursor): #kill another cursor's connection
+        status = False
+        if dbcursor.thread:
+            if dbcursor.thread.isAlive():
                 try:
-                    self.thread._Thread__stop()
-                    self.thread = None
+                    pid = dbcursor.dbconnection.connection.get_backend_pid()
+                    self.cursor.execute('select pg_terminate_backend(' + str(pid) + ') AS status')
+                    for row in self.cursor:
+                        status = row['status']
+                    if status:
+                        dbcursor.available = True
+                        dbcursor.running = False
+                        dbcursor.thread = None
                 except Exception as e:
                     print('Thread could not be terminated:' + e.message)
+        return status
+
 
     def __exit__(self):
         self.cursor.close()
@@ -161,8 +170,6 @@ class DbServer():
 
     def __str__(self):
         return json.dumps(self.__dict__)
-
-
 
 if __name__ == '__main__':
     dbc = DBConnection('localhost', '5432', 'postgres', 'kmoppel', '')
