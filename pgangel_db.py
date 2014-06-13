@@ -96,9 +96,8 @@ class DBCursor(object):
                 try:
                     pid = dbcursor.dbconnection.connection.get_backend_pid()
                     self.cursor.execute('select pg_terminate_backend(' + str(pid) + ') AS status')
-                    for row in cur.cursor:
+                    for row in self.cursor:
                         status = row['status']
-                    conn.close()
                     if status:
                         dbcursor.available = True
                         dbcursor.running = False
