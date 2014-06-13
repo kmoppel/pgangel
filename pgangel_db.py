@@ -7,7 +7,7 @@ import psycopg2
 import psycopg2.extras
 import json
 import threading
-
+import time
 
 class DBConnection(object):
 
@@ -58,6 +58,8 @@ class DBCursor(object):
         self.columns = None
         self.running = False
         self.available = True           #e.g. after data is offloaded
+        self.thread = None
+        ''':type : threading.Thread'''
 
     def process_query(self, query):
         self.running = True
@@ -77,17 +79,24 @@ class DBCursor(object):
         self.running = False
 
     def execute_query(self, query):
-        t = None
         if self.available:
             try:
                 self.available = False
-                t = threading.Thread(target=self.process_query, args=(query,))
-                t.daemon = True
-                t.start()
+                self.thread = threading.Thread(target=self.process_query, args=(query,))
+                self.thread.daemon = True
+                self.thread.start()
             except Exception as e:
                 self.available = True
                 print e
-        return t
+
+    def cancel_query(self):
+        if self.thread:
+            if self.thread.isAlive():
+                try:
+                    self.thread._Thread__stop()
+                    self.thread = None
+                except Exception as e:
+                    print('Thread could not be terminated:' + e.message)
 
     def __exit__(self):
         self.cursor.close()
@@ -110,7 +119,11 @@ class DbServer():
 
 if __name__ == '__main__':
     dbc = DBConnection('localhost', '5432', 'postgres', 'kmoppel', '')
-    dbs = DbServer('srv1', 'local', '5432', 'postgres', 'kmoppel')
+    # dbs = DbServer('srv1', 'local', '5432', 'postgres', 'kmoppel')
     # print dbc.try_connect()
-    print dbs
+    print dbc
+    cur = DBCursor(dbc)
+    cur.execute_query('select pg_sleep(10)')
+    time.sleep(5)
+    cur.cancel_query()
 
