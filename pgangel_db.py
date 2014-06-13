@@ -56,20 +56,12 @@ class DBCursor(object):
         self.rowcount = None
         self.cstore = None
         self.columns = None
+        self.running = False
+        self.available = True           #e.g. after data is offloaded
 
-    #def get_dataset(self):
-    #    cstore = {}
-    #    for row in self.cursor:
-    #        for col in self.get_columns():
-    #            data = row[col]
-    #            cstore[col] = cstore[col].append(data) if cstore.get(col, None) else [data]
-    #    return cstore
-
-    def execute_query(self, query):
+    def process_query(self, query):
+        self.running = True
         try:
-            #t = threading.Thread(target=self.cursor.execute, args=(str(query)))
-            #t.daemon = True
-            #t.start()
             self.cursor.execute(query)
             self.columns = [desc[0] for desc in self.cursor.description]
             self.rowcount = self.cursor.rowcount
@@ -82,7 +74,20 @@ class DBCursor(object):
                     self.cstore[col].append(data)
         except Exception as e:
             print e
-        return self.rowcount
+        self.running = False
+
+    def execute_query(self, query):
+        t = None
+        if self.available:
+            try:
+                self.available = False
+                t = threading.Thread(target=self.process_query, args=(query,))
+                t.daemon = True
+                t.start()
+            except Exception as e:
+                self.available = True
+                print e
+        return t
 
     def __exit__(self):
         self.cursor.close()
